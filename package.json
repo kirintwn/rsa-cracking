@@ -1,0 +1,15 @@
+{
+  "name": "RSA-Cracking",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "big-integer": "^1.6.25",
+    "ursa": "^0.9.4"
+  }
+}
