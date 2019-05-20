@@ -1,0 +1,35 @@
+{
+  "extends": ["airbnb", "prettier"],
+  "env": {
+    "node": true,
+    "mocha": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 9,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "plugins": [
+    "prettier",
+    "mocha"
+  ],
+  "rules": {
+    "no-console": "off",
+    "no-underscore-dangle": "off",
+    "no-unused-vars": "warn",
+    "no-continue": "off",
+    "no-bitwise": "off",
+    "no-restricted-syntax": [
+      "error", "ForInStatement", "LabeledStatement", "FunctionExpression", "WithStatement", "BinaryExpression[operator='in']"
+    ],
+    "consistent-return": "off",
+    "class-methods-use-this": "off",
+    "prettier/prettier": ["error", {
+      "singleQuote": true,
+      "trailingComma": "all",
+      "arrowParens": "always"
+    }]
+  }
+}

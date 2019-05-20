@@ -12,7 +12,7 @@
 - Import all public key files
    - extract and stroe their modulus and exponent value
 
-- The value is in the big number form (supported by BigInteger.js)
+- The value is in the big number form (supported by jsbn)
 
 - Traversal all the possible combination of 12 `modulus` value 
    - to see if there exist a GCD greater then 1
@@ -24,16 +24,17 @@ Calculate φ( n ) = (p-1)*(q-1)
 Calculate d = e modinverse φ( n )
 Calculate dp = d mod (p-1)
 Calculate dq = d mod (q-1)
-Calculate invQ = q modinverse p
+Calculate coeff (A.K.A. invQ) = q modinverse p
 Generate private key with modulus, exponent, p, q, dp, dq, invQ and d
 Export the private key to pem form
 ```
 
+## Dependencies
+* jsbn: `^1.1.0`
+* node-rsa: `^1.0.5`
+
 ## Usage
 ```
 npm install
-node app.js
+node index.js
 ```
-
-
-
