@@ -19,22 +19,28 @@ const checkKeyPairs = (pubKey, privKey) => {
 };
 
 const main = async (names) => {
-  await Promise.all(
-    names.map(async (name) => {
-      const [pubFile, privFile] = await Promise.all([
-        readFile(`./keys/${name}.pub`),
-        readFile(`./keys/${name}.pem`),
-      ]);
-
-      const pubKey = new NodeRSA(pubFile);
-      const privKey = new NodeRSA(privFile);
-      if (checkKeyPairs(pubKey, privKey)) {
-        console.log(`Key Pair Passed: ${name}`);
-      } else {
-        console.log(`Key Pair Failed: ${name}`);
-      }
-    }),
-  );
+  try {
+    await Promise.all(
+      names.map(async (name) => {
+        const [pubFile, privFile] = await Promise.all([
+          readFile(`./keys/${name}.pub`),
+          readFile(`./keys/${name}.pem`),
+        ]);
+        const pubKey = new NodeRSA(pubFile);
+        const privKey = new NodeRSA(privFile);
+        console.log(
+          `Key Pair ${
+            checkKeyPairs(pubKey, privKey)
+              ? `Passed: ${name}`
+              : `Failed: ${name}`
+          }`,
+        );
+      }),
+    );
+  } catch (error) {
+    console.error(error.message);
+    process.exit(1);
+  }
 };
 
 main(['public3', 'public8']);

@@ -36,5 +36,6 @@ Export the private key to pem form
 ## Usage
 ```
 npm install
-node index.js
+npm start
+npm test
 ```

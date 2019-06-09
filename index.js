@@ -5,23 +5,19 @@ const { BigInteger } = require('jsbn');
 
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
-
 const BN_1 = new BigInteger('1');
-
+const BN_0 = new BigInteger('0');
 const BNtoBuffer = (BN) => Buffer.from(BN.toString(16), 'hex');
 
 const genPrivKey = (pubKey, gcd) => {
   const { n, e } = pubKey.keyPair;
+  if (!n.mod(gcd).equals(BN_0)) throw new Error('GCD_COMPUTE_ERROR');
+
   const p = gcd.clone();
-  const q = pubKey.keyPair.n.divide(gcd);
-
-  if (!pubKey.keyPair.n.equals(p.multiply(q)))
-    throw new Error('GCD compute error');
-
+  const q = n.divide(gcd);
   const p1 = p.subtract(BN_1);
   const q1 = q.subtract(BN_1);
   const phiN = p1.multiply(q1);
-
   const d = new BigInteger(e.toString()).modInverse(phiN);
   const dmp1 = d.mod(p1);
   const dmq1 = d.mod(q1);
@@ -62,31 +58,35 @@ const commonFactorAttack = (keyFileArr) => {
       }
     }
   }
-
   return privKeys;
 };
 
 const main = async () => {
-  const keyFileArr = await Promise.all(
-    new Array(12).fill(null).map(async (el, i) => ({
-      name: `public${i + 1}`,
-      key: await readFile(`./keys/public${i + 1}.pub`),
-    })),
-  );
+  try {
+    const keyFileArr = await Promise.all(
+      new Array(12).fill(null).map(async (el, i) => ({
+        name: `public${i + 1}`,
+        key: await readFile(`./keys/public${i + 1}.pub`),
+      })),
+    );
 
-  const privKeys = commonFactorAttack(keyFileArr);
-  if (privKeys.length === 0) {
-    console.log('No Key Found');
-    process.exit(0);
+    const privKeys = commonFactorAttack(keyFileArr);
+    if (privKeys.length === 0) {
+      console.log('No Key Found');
+      process.exit(0);
+    }
+
+    await Promise.all(
+      privKeys.map(async (privKey) => {
+        console.log(`Found Key For Public Key: ${privKey.name}.pub`);
+        console.log(`Saving Private Key to File: ${privKey.name}.pem`);
+        return writeFile(`./keys/${privKey.name}.pem`, privKey.key);
+      }),
+    );
+  } catch (error) {
+    console.error(error.message);
+    process.exit(1);
   }
-
-  await Promise.all(
-    privKeys.map(async (privKey) => {
-      console.log(`Found Key For Public Key: ${privKey.name}.pub`);
-      await writeFile(`./keys/${privKey.name}.pem`, privKey.key);
-      console.log(`Saved Private Key to File: ${privKey.name}.pem`);
-    }),
-  );
 };
 
 main();

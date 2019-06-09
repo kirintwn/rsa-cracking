@@ -1,5 +1,8 @@
 {
-  "extends": ["airbnb", "prettier"],
+  "extends": [
+    "airbnb",
+    "prettier"
+  ],
   "env": {
     "node": true,
     "mocha": true
@@ -22,14 +25,21 @@
     "no-continue": "off",
     "no-bitwise": "off",
     "no-restricted-syntax": [
-      "error", "ForInStatement", "LabeledStatement", "FunctionExpression", "WithStatement", "BinaryExpression[operator='in']"
+      "error",
+      "ForInStatement",
+      "LabeledStatement",
+      "FunctionExpression",
+      "WithStatement",
+      "BinaryExpression[operator='in']"
     ],
-    "consistent-return": "off",
     "class-methods-use-this": "off",
-    "prettier/prettier": ["error", {
-      "singleQuote": true,
-      "trailingComma": "all",
-      "arrowParens": "always"
-    }]
+    "prettier/prettier": [
+      "error",
+      {
+        "singleQuote": true,
+        "trailingComma": "all",
+        "arrowParens": "always"
+      }
+    ]
   }
 }

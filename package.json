@@ -4,11 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint --fix ."
+    "test": "node verify.js",
+    "lint": "eslint --fix .",
+    "start": "node index.js"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "jsbn": "^1.1.0",
     "node-rsa": "^1.0.5"
