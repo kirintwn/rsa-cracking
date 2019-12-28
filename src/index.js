@@ -1,17 +1,18 @@
-const fs = require('fs');
-const util = require('util');
+const assert = require('assert');
+const path = require('path');
+const { promises: fs } = require('fs');
 const NodeRSA = require('node-rsa');
 const { BigInteger } = require('jsbn');
 
-const readFile = util.promisify(fs.readFile);
-const writeFile = util.promisify(fs.writeFile);
+const KEYS_DIR = '../keys';
+
 const BN_1 = new BigInteger('1');
 const BN_0 = new BigInteger('0');
 const BNtoBuffer = (BN) => Buffer.from(BN.toString(16), 'hex');
 
 const genPrivKey = (pubKey, gcd) => {
   const { n, e } = pubKey.keyPair;
-  if (!n.mod(gcd).equals(BN_0)) throw new Error('GCD_COMPUTE_ERROR');
+  assert(n.mod(gcd).equals(BN_0));
 
   const p = gcd.clone();
   const q = n.divide(gcd);
@@ -66,27 +67,35 @@ const main = async () => {
     const keyFileArr = await Promise.all(
       new Array(12).fill(null).map(async (el, i) => ({
         name: `public${i + 1}`,
-        key: await readFile(`./keys/public${i + 1}.pub`),
+        key: await fs.readFile(
+          path.join(__dirname, `${KEYS_DIR}/public${i + 1}.pub`),
+        ),
       })),
     );
 
     const privKeys = commonFactorAttack(keyFileArr);
-    if (privKeys.length === 0) {
-      console.log('No Key Found');
-      process.exit(0);
-    }
+    assert(privKeys.length > 0);
 
     await Promise.all(
       privKeys.map(async (privKey) => {
         console.log(`Found Key For Public Key: ${privKey.name}.pub`);
         console.log(`Saving Private Key to File: ${privKey.name}.pem`);
-        return writeFile(`./keys/${privKey.name}.pem`, privKey.key);
+        return fs.writeFile(
+          path.join(__dirname, `${KEYS_DIR}/${privKey.name}.pem`),
+          privKey.key,
+        );
       }),
     );
+
+    return privKeys.map((key) => key.name);
   } catch (error) {
     console.error(error.message);
-    process.exit(1);
+    return [];
   }
 };
 
-main();
+if (!module.parent) {
+  main();
+}
+
+module.exports = main;
