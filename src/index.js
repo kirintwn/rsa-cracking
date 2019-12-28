@@ -64,8 +64,9 @@ const commonFactorAttack = (pubKeyFiles) => {
 
 const attack = async (keysDir) => {
   const pubKeyFiles = await Promise.all(
-    (await fs.readdir(path.join(__dirname, keysDir)))
-      .filter((fileName) => fileName.endsWith('.pub'))
+    (await fs.readdir(path.join(__dirname, keysDir), { withFileTypes: true }))
+      .filter((dirent) => !dirent.isDirectory() && dirent.name.endsWith('.pub'))
+      .map((dirent) => dirent.name)
       .map(async (fileName) => ({
         name: fileName,
         content: await fs.readFile(
