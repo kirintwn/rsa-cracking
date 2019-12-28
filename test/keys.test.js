@@ -6,15 +6,17 @@ const attack = require('../src/index');
 const KEYS_DIR = '../keys';
 
 test('All key pairs works', async () => {
-  const keyNames = await attack();
+  const keyNames = await attack(KEYS_DIR);
 
   expect(keyNames.length).toBeGreaterThan(0);
 
   await Promise.all(
     keyNames.map(async (name) => {
       const [pubFile, privFile] = await Promise.all([
-        fs.readFile(path.join(__dirname, `${KEYS_DIR}/${name}.pub`)),
-        fs.readFile(path.join(__dirname, `${KEYS_DIR}/${name}.pem`)),
+        fs.readFile(path.join(__dirname, `${KEYS_DIR}/${name}`)),
+        fs.readFile(
+          path.join(__dirname, `${KEYS_DIR}/${name.replace(/.pub$/, '.pem')}`),
+        ),
       ]);
       const pubKey = new NodeRSA(pubFile);
       const privKey = new NodeRSA(privFile);

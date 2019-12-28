@@ -62,42 +62,45 @@ const commonFactorAttack = (pubKeyFiles) => {
   return privKeyFiles;
 };
 
-const attack = async () => {
-  try {
-    const pubKeyFiles = await Promise.all(
-      new Array(12).fill(null).map(async (_el, i) => ({
-        name: `public${i + 1}`,
+const attack = async (keysDir) => {
+  const pubKeyFiles = await Promise.all(
+    (await fs.readdir(path.join(__dirname, keysDir)))
+      .filter((fileName) => fileName.endsWith('.pub'))
+      .map(async (fileName) => ({
+        name: fileName,
         content: await fs.readFile(
-          path.join(__dirname, `${KEYS_DIR}/public${i + 1}.pub`),
+          path.join(__dirname, `${keysDir}/${fileName}`),
         ),
       })),
-    );
+  );
 
-    const privKeyFiles = commonFactorAttack(pubKeyFiles);
-    assert(privKeyFiles.length > 0);
+  const privKeyFiles = commonFactorAttack(pubKeyFiles);
 
-    await Promise.all(
-      privKeyFiles.map(async (privKeyFile) =>
-        fs.writeFile(
-          path.join(__dirname, `${KEYS_DIR}/${privKeyFile.name}.pem`),
-          privKeyFile.content,
+  await Promise.all(
+    privKeyFiles.map(async (privKeyFile) =>
+      fs.writeFile(
+        path.join(
+          __dirname,
+          `${KEYS_DIR}/${privKeyFile.name.replace(/.pub$/, '.pem')}`,
         ),
+        privKeyFile.content,
       ),
-    );
-
-    return privKeyFiles.map((key) => key.name);
-  } catch (error) {
-    console.error(error.message);
-    return [];
-  }
+    ),
+  );
+  return privKeyFiles.map((key) => key.name);
 };
 
 if (!module.parent) {
   const main = async () => {
-    const keyNames = await attack();
+    const keyNames = await attack(KEYS_DIR);
     console.log(`Found Private Key For: ${JSON.stringify(keyNames)}`);
   };
-  main();
+
+  try {
+    main();
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 module.exports = attack;
