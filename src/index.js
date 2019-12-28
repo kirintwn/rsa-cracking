@@ -45,16 +45,16 @@ const commonFactorAttack = (pubKeyFiles) => {
   const pubKeys = pubKeyFiles.map((keyFile) => new NodeRSA(keyFile.content));
 
   for (let i = 0; i < pubKeys.length - 1; i += 1) {
-    for (let j = i; j < pubKeys.length - 1; j += 1) {
-      const GCD = pubKeys[i].keyPair.n.gcd(pubKeys[j + 1].keyPair.n);
+    for (let j = i + 1; j < pubKeys.length; j += 1) {
+      const GCD = pubKeys[i].keyPair.n.gcd(pubKeys[j].keyPair.n);
       if (!GCD.equals(BN_1)) {
         privKeyFiles.push({
           name: `${pubKeyFiles[i].name}`,
           content: genPrivKey({ publicKey: pubKeys[i], gcd: GCD }),
         });
         privKeyFiles.push({
-          name: `${pubKeyFiles[j + 1].name}`,
-          content: genPrivKey({ publicKey: pubKeys[j + 1], gcd: GCD }),
+          name: `${pubKeyFiles[j].name}`,
+          content: genPrivKey({ publicKey: pubKeys[j], gcd: GCD }),
         });
       }
     }
