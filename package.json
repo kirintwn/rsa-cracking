@@ -4,6 +4,7 @@
   "description": "PoC of RSA Common Factor Attacks",
   "main": "index.js",
   "scripts": {
+    "clean": "rm keys/*.pem",
     "lint:fix": "eslint --fix .",
     "pretest": "eslint .",
     "test": "jest",
