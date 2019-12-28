@@ -93,7 +93,7 @@ const attack = async (keysDir) => {
 if (!module.parent) {
   const main = async () => {
     const keyNames = await attack(KEYS_DIR);
-    console.log(`Found Private Key For: ${JSON.stringify(keyNames)}`);
+    console.log(`Found Private Keys For: ${JSON.stringify(keyNames)}`);
   };
 
   try {
