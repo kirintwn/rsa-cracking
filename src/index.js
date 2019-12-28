@@ -40,54 +40,52 @@ const genPrivKey = (pubKey, gcd) => {
   return privKey.exportKey('pkcs1-private-pem');
 };
 
-const commonFactorAttack = (keyFileArr) => {
-  const privKeys = [];
-  const pubKeys = keyFileArr.map((el) => new NodeRSA(el.key));
+const commonFactorAttack = (pubKeyFiles) => {
+  const privKeyFiles = [];
+  const pubKeys = pubKeyFiles.map((keyFile) => new NodeRSA(keyFile.content));
 
   for (let i = 0; i < pubKeys.length - 1; i += 1) {
     for (let j = i + 1; j < pubKeys.length; j += 1) {
       const GCD = pubKeys[i].keyPair.n.gcd(pubKeys[j].keyPair.n);
       if (!GCD.equals(BN_1)) {
-        privKeys.push({
-          name: `${keyFileArr[i].name}`,
-          key: genPrivKey(pubKeys[i], GCD),
+        privKeyFiles.push({
+          name: `${pubKeyFiles[i].name}`,
+          content: genPrivKey(pubKeys[i], GCD),
         });
-        privKeys.push({
-          name: `${keyFileArr[j].name}`,
-          key: genPrivKey(pubKeys[j], GCD),
+        privKeyFiles.push({
+          name: `${pubKeyFiles[j].name}`,
+          content: genPrivKey(pubKeys[j], GCD),
         });
       }
     }
   }
-  return privKeys;
+  return privKeyFiles;
 };
 
-const main = async () => {
+const attack = async () => {
   try {
-    const keyFileArr = await Promise.all(
-      new Array(12).fill(null).map(async (el, i) => ({
+    const pubKeyFiles = await Promise.all(
+      new Array(12).fill(null).map(async (_el, i) => ({
         name: `public${i + 1}`,
-        key: await fs.readFile(
+        content: await fs.readFile(
           path.join(__dirname, `${KEYS_DIR}/public${i + 1}.pub`),
         ),
       })),
     );
 
-    const privKeys = commonFactorAttack(keyFileArr);
-    assert(privKeys.length > 0);
+    const privKeyFiles = commonFactorAttack(pubKeyFiles);
+    assert(privKeyFiles.length > 0);
 
     await Promise.all(
-      privKeys.map(async (privKey) => {
-        console.log(`Found Key For Public Key: ${privKey.name}.pub`);
-        console.log(`Saving Private Key to File: ${privKey.name}.pem`);
-        return fs.writeFile(
-          path.join(__dirname, `${KEYS_DIR}/${privKey.name}.pem`),
-          privKey.key,
-        );
-      }),
+      privKeyFiles.map(async (privKeyFile) =>
+        fs.writeFile(
+          path.join(__dirname, `${KEYS_DIR}/${privKeyFile.name}.pem`),
+          privKeyFile.content,
+        ),
+      ),
     );
 
-    return privKeys.map((key) => key.name);
+    return privKeyFiles.map((key) => key.name);
   } catch (error) {
     console.error(error.message);
     return [];
@@ -95,7 +93,11 @@ const main = async () => {
 };
 
 if (!module.parent) {
+  const main = async () => {
+    const keyNames = await attack();
+    console.log(`Found Private Key For: ${JSON.stringify(keyNames)}`);
+  };
   main();
 }
 
-module.exports = main;
+module.exports = attack;
